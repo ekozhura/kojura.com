@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>kojuro.com</title>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <link rel="stylesheet" href="{{base_url}}fonts/flaticon.css" media="screen" title="no title" charset="utf-8">
 <link rel="stylesheet" href="{{base_url}}styles.css" media="screen" title="no title" charset="utf-8">

@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>kojuro.com</title>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <link rel="stylesheet" href="{{base_url}}fonts/flaticon.css" media="screen" title="no title" charset="utf-8">
 <link rel="stylesheet" href="{{base_url}}styles.css" media="screen" title="no title" charset="utf-8">
@@ -14,7 +15,7 @@
             <nav>
                 <a href="{{ home_page }}" class="logo-icon"><span class="flaticon-cat2"></span></a>
                 <ul class="navbar">
-                    <li class="active"><a href="{{ base_url }}{{ blog_archive }}">BLOG</a></li>
+                    <li class="active"><a href="{{base_url}}{{ blog_archive }}">BLOG</a></li>
                     <li><a target="_blank" href="{{ twitter_link }}">TWITTER</a></li>
                     <li><a target="_blank" href="{{ github_link }}">GITHUB</a></li>
                     <li><a target="_blank" href="{{ linkedin_link }}">LINKEDIN</a></li>
