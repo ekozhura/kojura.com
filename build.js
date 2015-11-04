@@ -16,8 +16,8 @@ md.parser.use(require('markdown-it-highlightjs'));
 
 var metalsmith = Metalsmith(__dirname)
     .metadata({
-        base_url: "http://192.168.0.106:9011/build/",
-        home_page: "http://192.168.0.106:9011/build/",
+        base_url: "http://kojuro.com/",
+        home_page: "http://kojuro.com/",
         blog_archive: "blog/",
         twitter_link: "https://twitter.com/brutallo",
         github_link: "https://github.com/ekozhura",
