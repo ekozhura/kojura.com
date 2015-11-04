@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>kojuro.com</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" href="http://192.168.0.106:9011/build/fonts/flaticon.css" media="screen" title="no title" charset="utf-8">
+<link rel="stylesheet" href="http://192.168.0.106:9011/build/styles.css" media="screen" title="no title" charset="utf-8">
+<link href='https://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900,900italic&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="http://192.168.0.106:9011/build/css/highlight.darkula.css" media="screen" title="no title" charset="utf-8">
+</head>
+<body style="background-image: url(http://192.168.0.106:9011/build/gifs/mad.max.5.gif)">
+    <div class="wrapper">
+        <header>
+            <nav>
+                <a href="http://192.168.0.106:9011/build/" class="logo-icon"><span class="flaticon-cat2"></span></a>
+                <ul class="navbar">
+                    <li class="active"><a href="http://192.168.0.106:9011/build/blog/">BLOG</a></li>
+                    <li><a target="_blank" href="https://twitter.com/brutallo">TWITTER</a></li>
+                    <li><a target="_blank" href="https://github.com/ekozhura">GITHUB</a></li>
+                    <li><a target="_blank" href="https://www.linkedin.com/pub/evgeny-kozhura/b8/262/224">LINKEDIN</a></li>
+                </ul>
+            </nav>
+        </header>
+        <article>
+            <div class="entry entry-header">
+                Композиция в SuperCollider. Часть 3. Время и планировщики задач.
+            </div>
+            <div class="entry-wrapper">
+                <div class="entry-text">
+                    <p>Эта статья - небольшое отступление от темы Score Language в SuperCollider. Но безусловно необходимое для дальнейшего продвижения по теме событий и паттернов. Речь пойдет о планировщиках задач и о работе со временем в SuperCollider.</p>
+<p>В предыдущих статьях я рассмотрел потоки данных и способы их генерации с помощью <code>Routine</code>, <code>FuncStream</code>, и паттернов. Особенно интересен класс <code>Routine</code>, который с помощью <code>yield</code> может приостанавливать свое выполнение, возвращать значение и при повторном вызове продолжать выполнение с места остановки.</p>
+<p>У <code>Routine</code> есть еще одна интересная особенность - мы можем явно указать задержку по времени, после которой процедура восстановит выполнение. Для этого, вместо <code>next</code>, мы посылаем объекту <code>Routine</code> сообщение <code>play</code>. Время задержки будет определяться числовым значением, которое вернет <code>yield</code>. В этом примере итерация цикла выполняется через каждые полсекунды:</p>
+<pre><code class="hljs language-js">(
+c = Routine {
+    <span class="hljs-number">100.</span><span class="hljs-keyword">do</span> {
+        |i|
+        (<span class="hljs-string">"Current value : "</span> + i).postln;
+        <span class="hljs-number">0.5</span>.yield;
+    };
+};
+)
+
+c.play; <span class="hljs-comment">// старт</span>
+
+c.stop; <span class="hljs-comment">// в любой момент можно остановить проигрывание.</span>
+</code></pre>
+<p>В данном случае <code>Routine</code> выполняет совершенно другую задачу, не связанную с генерацией значений. Возможно, чтобы подчеркнуть, что значение, которое возвращает <code>yield</code> - это именно время задержки, для классов <code>Float</code> и <code>Integer</code> определен специальный метод <code>wait</code>, который по сути является псевдонимом <code>yield</code> <sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>. Тот же пример, но с методом <code>wait</code>, нагляднее демонстрирует поведение функции в <code>Routine</code>. Теперь код выглядит так, как будто на каждой итерации мы не значение возвращаем, а делаем паузу на полсекунды.</p>
+<pre><code class="hljs language-js">(
+c = Routine {
+    <span class="hljs-number">100.</span><span class="hljs-keyword">do</span> {
+        |i|
+        (<span class="hljs-string">"Current value : "</span> + i).postln;
+        <span class="hljs-number">0.5</span>.wait;
+    };
+};
+)
+</code></pre>
+<p>Таким образом, с помощью <code>Routine</code> можно написать простой планировщик задач <sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>. Определим функцию, которая принимает в качестве аргументов время задержки (параметр <code>delta</code>) и функцию, которую необходимо выполнять всякий раз по прошествию заданного времени <code>delta</code>:</p>
+<pre><code class="hljs language-js">(
+w = {
+    arg delta = <span class="hljs-number">0.5</span>, func = {};
+    <span class="hljs-keyword">var</span> sched = Routine {
+        inf.do {
+            func.value();
+            delta.wait;
+        }
+    };
+    sched.play;
+};
+)
+<span class="hljs-comment">// функция w вернет ссылку на объект sched</span>
+z = w.value(<span class="hljs-number">2</span>, { <span class="hljs-string">"event occured"</span>.postln; });
+
+z.stop;
+</code></pre>
+<p>Именно так работает метод <code>sched</code> в семействе классов <code>Clock</code>, и используется он как раз для этих целей - выполнение задач в какой-то момент в будущем <sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup>. И именно его использует <code>Routine</code> в ответ на сообщение <code>play</code>, поэтому предыдущий пример можно переписать так:</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// остановить выполнение можно с помощью cmd + .</span>
+SystemClock.sched(<span class="hljs-number">0</span>, { <span class="hljs-string">"event occured!"</span>.postln; <span class="hljs-number">2</span>; });
+</code></pre>
+<p>Как видно из примера, если функция возвращает числовое значение, <code>SystemClock.sched</code> будет повторять выполнение этой функции снова и снова, а временем задержки будет возвращаемое функцией числовое значение. В данном случае, время задержки 2 секунды.</p>
+<p>Абстрактный класс <code>Clock</code> и его потомки - <code>SystemClock</code>, <code>AppClock</code> и <code>TempoClock</code> предназначены для отсчета времени, как на то намекают их названия. У каждого конкретного класса свое назначение. <code>SystemClock</code> и <code>AppClock</code> всегда отсчитывают время в секундах и не могут быть инстанциированы. У <code>AppClock</code> более низкий системный приоритет, поэтому он используется там, где точность времени не критична - например для работы с GUI. <code>TempoClock</code> предоставляет такой же точный тайминг, как и <code>SystemClock</code>, но возвращает не секунды, а количество ударов в секунду (beats per second). Плюс, в отличии от других классов, можно инстанциировать сколько угодно экземляров <code>TempoClock</code>, при этом при старте SuperCollider по умолчанию создается один экземпляр и он становится доступен по <code>TempoClock.default</code>.</p>
+<p>Идея в том, что каждый отсчет времени в <code>SystemClock</code> и <code>AppClock</code> - это постоянная величина, ведь секунда есть секунда. Поэтому особого смысла инстанциировать несколько экземпляров каждого из этих классов нет. А с <code>TempoClock</code> все иначе, beats per second - величина относительная, и если меняется темп, то меняется и интервал между двумя отсчетами. Разные счетчики позволяют выполнять запланированные функции с разной частотой:</p>
+<pre><code class="hljs language-js">(
+c = TempoClock(<span class="hljs-number">1</span>);
+d = TempoClock(<span class="hljs-number">0.5</span>); <span class="hljs-comment">// темп в два раза медленнее</span>
+
+c.sched(<span class="hljs-number">0</span>, { |b| [<span class="hljs-string">"Beats from c:"</span>, b].postln; <span class="hljs-number">1</span> });
+d.sched(<span class="hljs-number">0</span>, { |b| [<span class="hljs-string">"Beats from d:"</span>, b].postln; <span class="hljs-number">1</span> });
+)
+</code></pre>
+<p>Итак, вернемся к <code>Routine</code> и рассмотрим, как работает метод <code>play</code>. Метод <code>play</code> определен для базового класса <code>Stream</code> и доступен для всех его потомков, не только для <code>Routine</code>. Его поведение следующее - если при вызове метода в качестве аргумента был передан экземпляр класса <code>Clock</code> (или его подклассов), то этому объекту посылается сообщение <code>play</code>. В противном случае, это сообщение посылается дефолтному счетчику, который возвращает <code>TempoClock.default</code>.</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">/* метод play класса Stream */</span>
+<span class="hljs-comment">/* File: supercollider/SCClassLibrary/Common/Streams/Stream.sc */</span>
+play { arg clock, quant;
+    clock = clock ? TempoClock.default;
+    clock.play(<span class="hljs-keyword">this</span>, quant.asQuant);
+}
+</code></pre>
+<p>Сам же метод <code>play</code> в классе <code>Clock</code> - это обертка метода <code>sched</code>, поэтому код <code>SystemClock.play({ &quot;event occured!&quot;.postln; 2; })</code> будет аналогичен <code>SystemClock.sched(0, { &quot;event occured!&quot;.postln; 2; });</code></p>
+<p>Остановить задачу можно с помощью метода <code>stop</code>. Этот метод останавливает выполнение функции внутри <code>Routine</code>, как если бы она достигла конца. После этого любая попытка возобновить выполнение (к примеру с помощью методов <code>next</code> или <code>value</code>) ни к чему не приведет. Можно лишь заново начать выполнение <code>Routine</code> с помощью метода <code>reset</code>.</p>
+<p>Вот такое поведение не всегда желательно. Если необходимо поставить на паузу задачу, то <code>Routine</code> для этих целей не подойдет - <code>yield</code> (или <code>wait</code>) внутри <code>Routine</code> всегда будет возвращать одно и то же значение в качестве времени задержки. Не говоря о том, что сама по себе пауза означает задержку, не определенную по времени - 5 секунд, 10 минут, 2 часа.</p>
+<p>Тут на помощь приходит <code>PauseStream</code> и его два важных подкласса <code>EventStreamPlayer</code> и <code>Task</code>. <code>EventStreamPlayer</code> имеет смысл рассмотреть в отдельной статье вместе с событиями и с потоками событий. Что касается <code>Task</code>, то он во многом повторяет поведение <code>Routine</code> (по существу, это обертка вокруг <code>Routine</code>, поэтому методы <code>yield</code> и <code>wait</code> будут работать внутри <code>Task</code>), в то же время наследует у <code>PauseStream</code> способность ставать на паузу и восстанавливать выполнение.</p>
+<pre><code class="hljs language-js">(
+d = Routine {
+    <span class="hljs-number">50.</span><span class="hljs-keyword">do</span>({ arg i;
+        i.squared.postln;
+        <span class="hljs-number">0.5</span>.wait;
+    });
+}
+)
+</code></pre>
+<p>Функция, определенная в <code>Routine</code>, может передана в <code>Task</code> без изменений. Но поведение методов <code>play</code>, и <code>stop</code> отличается от соответствующих методов в <code>Routine</code>.</p>
+<pre><code class="hljs language-js">(
+t = Task {
+    <span class="hljs-number">50.</span><span class="hljs-keyword">do</span>({ arg i;
+        i.squared.postln;
+        <span class="hljs-number">0.5</span>.wait;
+    });
+}
+)
+<span class="hljs-comment">// весь набор для управления выполнением задачи</span>
+t.play
+t.pause     <span class="hljs-comment">// аналогичен stop</span>
+t.resume    <span class="hljs-comment">// аналогичен play</span>
+t.stop
+t.reset
+</code></pre>
+<p><code>Task</code> не является стопроцентной заменой <code>Routine</code>, в нем иногда обнаруживается довольно странное поведение, о чем предупреждает хелп файл по классу. К тому же, <code>Routine</code> наследует свое поведение не только от <code>Stream</code>, но и от <code>Thread</code>. А <code>Task</code> по-прежнему остается подклассом <code>Stream</code>, интерфейс которого расширяется с помощью <code>PauseStream</code> <sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup>.</p>
+<hr>
+<p>В следующей статье я обязательно рассмотрю такое важное понятие в SuperCollider как Событие (<code>Event</code>). <code>Event</code> в SuperCollider обозначает именно музыкальное событие (например, проигрывание ноты), поэтому имеет к композиции самое непосредственное отношение. Но в тоже время объекты этого класса применяются и для (неожиданно) прототипирования классов в SuperCollider. А поскольку я параллельно пишу статьи по ООП в SuperCollider, то буквально разрываюсь, с какой стороны подойти к теме ивентов. Но как бы там ни было, следующая статья по SuperCollider должна быть посвящена классу <code>Event</code>.</p>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1"  class="footnote-item"><p>Строго говоря, метод <code>wait</code> просто вызывает <code>yield</code>, соответственно все правила для <code>yield</code> будут справедливы и для <code>wait</code>. Например, вызвав <code>wait</code> в какой-нибудь функции вне <code>Routine</code> мы получим стандартное исключение <em>“yield was called outside of a Routine”</em>. <a href="#fnref1" class="footnote-backref">↩</a></p>
+</li>
+<li id="fn2"  class="footnote-item"><p>В зависимости от контекста, <em>Планировщик</em> может соответствовать одному из двух шаблонов - Scheduler или Scheduled Task. Между ними есть разница, несмотря на созвучные названия. В статье речь идет именно о Scheduled Task. Подробнее о шаблоне: http://c2.com/cgi/wiki?ScheduledTask. <a href="#fnref2" class="footnote-backref">↩</a></p>
+</li>
+<li id="fn3"  class="footnote-item"><p>Аналогичное поведение функции <code>at</code> в Overtone. <a href="#fnref3" class="footnote-backref">↩</a></p>
+</li>
+<li id="fn4"  class="footnote-item"><p>Вообще, если придираться к словам, то оба родительских класса <code>PauseStream</code> и <code>Thread</code> классов <code>Task</code> и <code>Routine</code>, наследуются от общего предка <code>Stream</code>. И каждый по своему расширяет интерфейс <code>Stream</code> уникальным поведением. Но если <code>PauseStream</code> - это все еще <code>Stream</code>, то семантика <code>Thread</code> никакого отношения к потокам не имеет и наследуется от <code>Stream</code> чисто формально, чтобы передать некоторые его свойства классу <code>Routine</code>. Все-таки, множественного наследования в SuperCollider нет, а композицией делу поможешь. <a href="#fnref4" class="footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>
+
+                </div>
+            </div>
+        </article>
+        <div class="push"></div>
+    </div>
+    <footer>
+    </footer>
+</body>
+</html>

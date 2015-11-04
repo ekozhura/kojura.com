@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>kojuro.com</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" href="http://192.168.0.106:9011/build/fonts/flaticon.css" media="screen" title="no title" charset="utf-8">
+<link rel="stylesheet" href="http://192.168.0.106:9011/build/styles.css" media="screen" title="no title" charset="utf-8">
+<link href='https://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900,900italic&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="http://192.168.0.106:9011/build/css/highlight.darkula.css" media="screen" title="no title" charset="utf-8">
+</head>
+<body style="background-image: url(http://192.168.0.106:9011/build/gifs/mad.max.1.gif)">
+    <div class="wrapper">
+        <header>
+            <nav>
+                <a href="http://192.168.0.106:9011/build/" class="logo-icon"><span class="flaticon-cat2"></span></a>
+                <ul class="navbar">
+                    <li class="active"><a href="http://192.168.0.106:9011/build/blog/">BLOG</a></li>
+                    <li><a target="_blank" href="https://twitter.com/brutallo">TWITTER</a></li>
+                    <li><a target="_blank" href="https://github.com/ekozhura">GITHUB</a></li>
+                    <li><a target="_blank" href="https://www.linkedin.com/pub/evgeny-kozhura/b8/262/224">LINKEDIN</a></li>
+                </ul>
+            </nav>
+        </header>
+        <article>
+            <div class="entry entry-header">
+                Композиция в SuperCollider. Часть 1. Потоки
+            </div>
+            <div class="entry-wrapper">
+                <div class="entry-text">
+                    <p>Основой алгоритмической композиции, по сути, являются математические методы генерации партитур. Синтаксические конструкции или библиотеки функций и классов, которые используются в композиции, часто выделяются в так называемый score language, то есть язык, который используется для определения партитур. Score language в SuperCollider базируется на потоках (абстрактный класс Stream), событиях (класс Event) и паттернах (абстрактный класс Pattern). Сперва рассмотрим потоки.</p>
+<p>Термины <strong>итератор</strong>, <strong>генератор</strong> и <strong>поток</strong> в разных языках программирования используются для описания похожих концепций и абстракций, но не всегда аналогичных. В общем случае, итератор - это объект, который осуществляет последовательный доступ к элементам коллекции. Это несколько отличается от перебора элементов коллекции по их индексам.</p>
+<p>UPD: Еще есть понятие сопрограмма (<strong>coroutine</strong>), которая является наиболее общим понятием, а генераторы и обычные процедуры (подпрограммы) - ее частными случаями. Чем генератор отличается от подпрограммы - он может приостанавливать свое выполнение, в отличии от подпрограммы, которая выполняется с начала всякий раз когда ее вызывает главная программа. Чем генератор отличается от сопрограммы - отношение между генератором и главной программой все еще ассиметрическое (как и в случае с подпрограммой). Это значит, что генератор может приостановить свое выполнение, но продолжить выполнение может только главная программа (caller). Более того, генератор всегда возвращает управление в то место, где он был вызван. В тоже время сопрограмма, вместо приостановления/продолжения, выполняет “трансфер” (transfer).</p>
+<p>Интерфейс итератора предполагает следующее поведение. Во-первых, необходимо инициализировать итератор с каким-то начальным состоянием и сбрасывать состояние итератора на начальное. Начальное состояние чаще всего предполагает, что итератор вернет первый элемент коллекции. Во-вторых, необходимо извлекать следующий элемент коллекции. И наконец, если коллекция имеет конечное число элементов, необходимо каким-то образом узнать, что были перебраны все элементы.</p>
+<p>Генератор - это специальная функция, которая сохраняет внутреннее состояние и способна приостановить свое выполнение. Когда функция будет вызвана в следующий раз, то она продолжит выполнение на том месте, где остановилась, вместо того чтобы отработать заново. Это достигается вызовом специального оператора <code>yield</code>, который возвращает значение (аналогично оператору <code>return</code>) и приостанавливает функцию до ее следующего вызова.</p>
+<p>Пример генератора на Python:</p>
+<pre><code class="hljs language-python"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">counter</span><span class="hljs-params">(n)</span>:</span>
+    <span class="hljs-keyword">while</span> <span class="hljs-keyword">True</span>:
+        <span class="hljs-keyword">yield</span> n
+        n += <span class="hljs-number">1</span>
+</code></pre>
+<p>В примере реализован счетчик, который сгенерирует новое значение каждый раз, когда будет вызван. Поскольку в цикле отсутствует условие выхода из цикла, счетчик по сути генерирует бесконечную последовательность целых чисел.</p>
+<pre><code class="hljs language-python"><span class="hljs-prompt">&gt;&gt;&gt; </span>f = counter(<span class="hljs-number">2</span>)
+<span class="hljs-prompt">&gt;&gt;&gt; </span>f.next()
+<span class="hljs-number">2</span>
+<span class="hljs-prompt">&gt;&gt;&gt; </span>f.next()
+<span class="hljs-number">3</span>
+<span class="hljs-prompt">&gt;&gt;&gt; </span>f.next()
+<span class="hljs-number">4</span>
+</code></pre>
+<p>Как видно из примера, поведение генератора аналогично итератору.</p>
+<p>Ну и наконец, потоки (данных) - своего рода “ленивые” списки (lazy lists). Это означает, что элементы коллекции вычисляются “по требованию”, всякий раз при попытке доступа к ним. Собственно, потоки - это абстракция, структура данных с определенными свойствами. Реализуются они с помощью итераторов и генераторов. Так как элементы вычисляются тогда, когда к ним пытаются получить доступ, потоки могут быть бесконечными (как в примере счетчика).</p>
+<p>В SuperCollider потоки определяются набором классов, которые наследуются от абстрактного класса <code>Stream</code>. Каждый поток реализует метод <code>next</code>, позволяющий получать последовательный доступ к элементам в потоке. Интересно то, что для абстрактного класса <code>Object</code> так же определен метод <code>next</code> (который возвращает <code>this</code>), а поскольку в SuperCollider все классы наследуются от <code>Object</code>, то любой объект по сути может быть рассмотрен как поток. Метод <code>reset</code>, если он реализован, сбрасывает состояние потока на начальное или просто возвращает <code>nil</code>.</p>
+<p>Наиболее полезными классами-потомками <code>Stream</code> являются <code>FuncStream</code> и <code>Routine</code>. <code>FuncStream</code> позволяет нам использовать функции при вызове методов <code>next</code> и <code>reset</code>.</p>
+<p>В следующем примере мы определяем функцию как аргумент конструктора, которая будет выполнятся всякий раз, когда мы вызываем метод <code>next</code>. И всякий раз эта функция будет возвращать число, выбранное из заданного списка случайным образом. Тем самым, с помощью экземпляра класса <code>FuncStream</code>, мы можем определить бесконечный поток, состоящий из случайных чисел.</p>
+<pre><code class="hljs language-javascript">(
+a = FuncStream.new({ #[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>].choose });
+<span class="hljs-number">5.</span><span class="hljs-keyword">do</span>({ a.next.postln; });
+)
+</code></pre>
+<p>Функция для метода <code>reset</code> не определена, а потому вызвав <code>reset</code>, мы получим <code>nil</code>.</p>
+<p>Класс <code>Routine</code> также позволяет запускать функцию для определения значений в потоке данных, но особенность <code>Routine</code> в том, что объекты этого класса являются генераторами. То есть, с помощью <code>yield</code> мы сохраняем текущее состояние и приостанавливаем выполнение функции до следующего вызова метода <code>next</code>. Исчерпав все вызовы <code>yield</code>, в конечном итоге функция вернет <code>nil</code>. Простейшие примеры:</p>
+<pre><code class="hljs language-javascript">(
+a = Routine.new({ <span class="hljs-number">1.</span><span class="hljs-keyword">yield</span>; <span class="hljs-number">2.</span><span class="hljs-keyword">yield</span>; });
+a.next.postln;  <span class="hljs-comment">// 1</span>
+a.next.postln;  <span class="hljs-comment">// 2</span>
+a.next.postln;  <span class="hljs-comment">// nil</span>
+)
+</code></pre>
+<pre><code class="hljs language-javascript">(
+a = Routine.new({
+        <span class="hljs-number">3.</span><span class="hljs-keyword">do</span>({ arg i; i.yield; })
+    });
+b.nextN(<span class="hljs-number">4</span>);<span class="hljs-comment">//  выведет -&gt; [ 0, 1, 2, nil ]</span>
+)
+</code></pre>
+<p>К потоку можно применять математические операции, его можно отфильтровать или применять функции к каждому элементу.</p>
+<p>Метод <code>collect</code> - аналогичен функции map в функциональных языках программирования, а именно над каждым элементом выполняется какое-то действие, в результате мы получаем новый, уже трансформированный поток. В данном примере, к числам от 0 до 9 будет прибавлено 100:</p>
+<pre><code class="hljs language-javascript">(
+a = Routine.new({
+        <span class="hljs-number">10.</span><span class="hljs-keyword">do</span>({ arg i; i.yield; })
+    });
+b = a.collect({ arg item; item + <span class="hljs-number">100</span> ; });
+b.nextN(<span class="hljs-number">10</span>);
+)
+</code></pre>
+<p>Методы <code>select</code> и <code>reject</code> позволяют создать новый поток из элементов текущего, если эти элементы удовлетворяют условию (в случае <code>select</code>) или не удовлетворяют условию (в случае <code>reject</code>). Например, необходимо отобрать все нечетные числа из последовательности:</p>
+<pre><code class="hljs language-javascript">(
+a = Routine.new({
+        <span class="hljs-number">10.</span><span class="hljs-keyword">do</span>({ arg i; i.yield; })
+    });
+
+<span class="hljs-comment">// функция, определенная в select будет возвращать true для всех нечетных чисел</span>
+b = a.select({ arg item; item.odd; });
+b.nextN(<span class="hljs-number">5</span>);
+)
+</code></pre>
+<p>Аналогичную функцию, но с использованием <code>reject</code> можно переписать таким образом:</p>
+<pre><code class="hljs language-javascript">(
+a = Routine.new({
+        <span class="hljs-number">10.</span><span class="hljs-keyword">do</span>({ arg i; i.yield; })
+    });
+
+<span class="hljs-comment">// функция, определенная в reject будет возвращать false для всех четных чисел</span>
+b = a.reject({ arg item; item.even; });
+b.nextN(<span class="hljs-number">5</span>);
+)
+</code></pre>
+<hr>
+<p>Вот, собственно, и вся базовая информация об итераторах, потоках и их реализации в SuperCollider. В следующих постах я рассмотрю события и паттерны в SuperCollider. В общем, продолжение следует.</p>
+
+                </div>
+            </div>
+        </article>
+        <div class="push"></div>
+    </div>
+    <footer>
+    </footer>
+</body>
+</html>

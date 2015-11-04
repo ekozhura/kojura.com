@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>kojuro.com</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" href="http://192.168.0.106:9011/build/fonts/flaticon.css" media="screen" title="no title" charset="utf-8">
+<link rel="stylesheet" href="http://192.168.0.106:9011/build/styles.css" media="screen" title="no title" charset="utf-8">
+<link href='https://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900,900italic&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="http://192.168.0.106:9011/build/css/highlight.darkula.css" media="screen" title="no title" charset="utf-8">
+</head>
+<body style="background-image: url(http://192.168.0.106:9011/build/gifs/mad.max.3.gif)">
+    <div class="wrapper">
+        <header>
+            <nav>
+                <a href="http://192.168.0.106:9011/build/" class="logo-icon"><span class="flaticon-cat2"></span></a>
+                <ul class="navbar">
+                    <li class="active"><a href="http://192.168.0.106:9011/build/blog/">BLOG</a></li>
+                    <li><a target="_blank" href="https://twitter.com/brutallo">TWITTER</a></li>
+                    <li><a target="_blank" href="https://github.com/ekozhura">GITHUB</a></li>
+                    <li><a target="_blank" href="https://www.linkedin.com/pub/evgeny-kozhura/b8/262/224">LINKEDIN</a></li>
+                </ul>
+            </nav>
+        </header>
+        <article>
+            <div class="entry entry-header">
+                Композиция в SuperCollider. Часть 2. Введение в паттерны
+            </div>
+            <div class="entry-wrapper">
+                <div class="entry-text">
+                    <p>В прошлой статье я рассмотрел потоки в SuperCollider и базовые возможности по их генерации. Между тем, в SuperCollider существуют более продвинутые способы определения потоков. Речь о паттернах и об их преимуществах.</p>
+<p>Паттерны - это классы, которые наследуются от базового класса Pattern и реализуют методы <code>asStream</code> и <code>embedInStream</code>. Для удобства названия классов-паттернов начинаются с прописной “P” (<code>Pbind</code>, <code>Pseries</code>, <code>Pfunc</code>, и т.д.).</p>
+<p>Паттерны в SuperCollider выполняют роль спецификаций, они описывают правила, согласно которым создаются потоки. При этом, они не порождают потоки (например, вызов <code>next</code> вернет ссылку на сам объект паттерна, как это определено в унаследованном методе <code>next</code> класса <code>Object</code>). Чтобы создать поток, необходимо вызвать метод <code>asStream</code> объекта паттерна, который вернет экземпляр одного из подклассов <code>Stream</code>.</p>
+<p>Библиотека паттернов - это некоторое множество алгоритмов, которые мы можем использовать для создания потоков. Нет необходимости каждый раз писать свои генераторы для классов <code>Routine</code> и <code>FuncStream</code>. Существует вероятность того, что необходимый алгоритм уже реализован в одном из паттерн-классов.</p>
+<p>К примеру, попробуем реализовать простейший счетчик с помощью <code>Routine</code>:</p>
+<pre><code class="hljs language-js">(
+<span class="hljs-keyword">var</span> step = <span class="hljs-number">2</span>;
+a = Routine({
+    | inc = <span class="hljs-number">0</span> |
+    loop {
+        inc.yield;
+        inc = inc + step;
+    }
+});
+
+<span class="hljs-number">10.</span><span class="hljs-keyword">do</span>({ a.next(<span class="hljs-number">2</span>).postln; });
+)
+</code></pre>
+<p>Аналогичную последовательность мы получим, если реализуем счетчик с помощью паттернов:</p>
+<pre><code class="hljs language-js">(
+d = Pseries(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>, inf).asStream;
+<span class="hljs-number">10.</span><span class="hljs-keyword">do</span>({
+    d.next.postln;
+});
+)
+</code></pre>
+<p>В общем случае, <code>Pseries</code> генерирует арифметическую прогрессию и принимает в качестве параметров начальное значение, разность между членами прогрессии и длину прогреcсии.</p>
+<p>Очевидны некоторые преимущества использования паттернов - запись более лаконична, код менее подвержен ошибкам, в действии - принцип повторного использования кода. Еще одним преимуществом паттернов в SuperCollider является их вложенность. Достигается это благодаря методу <code>embedInStream</code> который позволяет “встраивать” в поток любой объект (числа, строки, символы, коллекции и т.д.).</p>
+<p>Попробую проиллюстрировать работу <code>embedInStream</code> таким примером. Скажем, внутри одного объекта <code>Routine</code> мы определяем еще один объект <code>Routine</code>. Первый, routeIn генерирует последовательность чисел 0, 1, 2, 3, 4, а  второй, routeOut - 200, 201, …, 209. Задача в том, чтобы включить значения внутреннего потока routeIn во внешний routeOut таким образом, чтобы при последовательном обходе элементов routeOut с помощью <code>next</code> мы имели доступ к обеим последовательностям как к единому целому. Сделать это можно таким способом:</p>
+<pre><code class="hljs language-js">(
+<span class="hljs-keyword">var</span> routeOut = Routine.new({
+    <span class="hljs-keyword">var</span> count = nil,
+    routeIn = Routine.new({
+        <span class="hljs-number">5.</span><span class="hljs-keyword">do</span>{
+            arg i; i.yield;
+        };
+    });
+
+    {count = routeIn.next; count.notNil}.while ({
+        count.yield;
+    });
+
+    <span class="hljs-number">10.</span><span class="hljs-keyword">do</span>{
+        arg i; (i+<span class="hljs-number">200</span>).yield;
+    }
+});
+
+{(m = routeOut.next).notNil}.while{
+    m.postln;
+};
+)
+</code></pre>
+<p>То есть, сначала мы создаем внутренний <code>Routine</code>, генерирующий последовательность [0, 1, 2, 3, 4]. Затем обходим эти элементы в цикле while и вызываем оператор <code>yield</code> для каждого элемента. Потом вызываем <code>yield</code> для элементов [200, 201, …, 209]. Таким образом, во внешнем <code>Routine</code> обе последовательности объединяются в один поток, по которому мы двигаемся с помощью <code>routeOut.next</code>.</p>
+<p>Метод <code>embedInStream</code> делает то же самое - встраивает объект в поток. Перепишем код:</p>
+<pre><code class="hljs language-js">(
+<span class="hljs-keyword">var</span> routeOut = Routine.new({
+    <span class="hljs-keyword">var</span> routeIn = Routine.new({
+        <span class="hljs-number">5.</span><span class="hljs-keyword">do</span> {
+            arg i; i.yield;
+        };
+    }).embedInStream;
+
+    <span class="hljs-number">10.</span><span class="hljs-keyword">do</span> {
+        arg i; (i+<span class="hljs-number">200</span>).yield;
+    }
+});
+
+{(m = routeOut.next).notNil}.while {
+    m.postln;
+};
+)
+</code></pre>
+<p>Единственный момент, который следует учесть, используя <code>embedInStream</code>. Поскольку внутри <code>embedInStream</code> вызывается оператор <code>yield</code>, то вызов <code>embedInStream</code> необходимо помещать в <code>Routine</code>, иначе будет сгенерировано исключение.</p>
+<p>Теперь перепишем этот пример таким образом, чтобы вместо объектов <code>Routine</code> использовать паттерны:</p>
+<pre><code class="hljs language-js">(
+a = Pseq([
+        Pseries(<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">5</span>),
+        Pseries(<span class="hljs-number">200</span>, <span class="hljs-number">1</span>, <span class="hljs-number">10</span>)
+    ]).asStream;
+
+{(m = a.next).notNil}.while{
+    m.postln;
+};
+)
+</code></pre>
+<p><code>Pseq</code> позволяет создать поток на основе заданого списка значений. В качестве параметров, помимо самого списка, принимает также число повторений списка в результирующем потоке. Когда мы вызываем метод <code>asStream</code> экземпляра класса <code>Pseq</code>, создается объект <code>Routine</code>, внутри которого вызывается метод <code>embedInStream</code>. Поведение этого метода для <code>Pseq</code> определено следующим образом - внутри цикла последовательно извлекается каждый элемент списка. В нашем случае каждый такой элемент - это экземляр класса <code>Pseries</code>. В этом же цикле управление переходит к методу <code>embedInStream</code>, определенному уже для <code>Pseries</code>. Таким образом, элементы, генерируемые объектами <code>Pseries</code>, встраиваются во внешний поток, который создается объектом класса <code>Pseq</code>.</p>
+<hr>
+<p>Итого. Паттерны позволяют инкапсулировать реализацию разнообразных генераторов потоков (получаются своего рода обертки каких-то подклассов класса <code>Stream</code>, а в большинстве случаев это будет <code>Routine</code>). Они также поддерживают вложенность и кое-какие операции трансформации (аналогичные тем, что были рассмотрены в статье о потоках), что позволяет создавать сложные паттерны из более простых. И последнее, потоки предоставляют пользователю простой и удобный API для работы с потоками. В следующей статье будет уделено больше внимания классам паттернов и операциям над ними.</p>
+
+                </div>
+            </div>
+        </article>
+        <div class="push"></div>
+    </div>
+    <footer>
+    </footer>
+</body>
+</html>
