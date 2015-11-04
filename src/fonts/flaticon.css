@@ -1,0 +1,119 @@
+@font-face {
+	font-family: "Flaticon";
+	src: url("flaticon.eot");
+	src: url("flaticon.eot#iefix") format("embedded-opentype"),
+	url("flaticon.woff") format("woff"),
+	url("flaticon.ttf") format("truetype"),
+	url("flaticon.svg") format("svg");
+	font-weight: normal;
+	font-style: normal;
+}
+[class^="flaticon-"]:before, [class*=" flaticon-"]:before,
+[class^="flaticon-"]:after, [class*=" flaticon-"]:after {
+	font-family: Flaticon;
+    font-size: 20px;
+	font-style: normal;
+	font-weight: normal;
+}
+.flaticon-alphabet10:before {
+	content: "\e000";
+}
+.flaticon-asian4:before {
+	content: "\e001";
+}
+.flaticon-asian7:before {
+	content: "\e002";
+}
+.flaticon-asian9:before {
+	content: "\e003";
+}
+.flaticon-cat2:before {
+	content: "\e004";
+}
+.flaticon-entrance2:before {
+	content: "\e005";
+}
+.flaticon-flower14:before {
+	content: "\e006";
+}
+.flaticon-flower15:before {
+	content: "\e007";
+}
+.flaticon-flowers26:before {
+	content: "\e008";
+}
+.flaticon-flowers27:before {
+	content: "\e009";
+}
+.flaticon-hat1:before {
+	content: "\e00a";
+}
+.flaticon-helmet11:before {
+	content: "\e00b";
+}
+.flaticon-india7:before {
+	content: "\e00c";
+}
+.flaticon-japan10:before {
+	content: "\e00d";
+}
+.flaticon-japan12:before {
+	content: "\e00e";
+}
+.flaticon-japan17:before {
+	content: "\e00f";
+}
+.flaticon-japan2:before {
+	content: "\e010";
+}
+.flaticon-japan22:before {
+	content: "\e011";
+}
+.flaticon-japan35:before {
+	content: "\e012";
+}
+.flaticon-japan36:before {
+	content: "\e013";
+}
+.flaticon-japan7:before {
+	content: "\e014";
+}
+.flaticon-japanese18:before {
+	content: "\e015";
+}
+.flaticon-letter118:before {
+	content: "\e016";
+}
+.flaticon-logo5:before {
+	content: "\e017";
+}
+.flaticon-logotype39:before {
+	content: "\e018";
+}
+.flaticon-luck3:before {
+	content: "\e019";
+}
+.flaticon-murderer:before {
+	content: "\e01a";
+}
+.flaticon-nature4:before {
+	content: "\e01b";
+}
+.flaticon-ninja10:before {
+	content: "\e01c";
+}
+.flaticon-oriental:before {
+	content: "\e01d";
+}
+.flaticon-panda4:before {
+	content: "\e01e";
+}
+.flaticon-star5:before {
+	content: "\e01f";
+}
+.flaticon-temple23:before {
+	content: "\e020";
+}
+.flaticon-writing35:before {
+	content: "\e021";
+}

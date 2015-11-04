@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>kojuro.com</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" href="{{base_url}}fonts/flaticon.css" media="screen" title="no title" charset="utf-8">
+<link rel="stylesheet" href="{{base_url}}styles.css" media="screen" title="no title" charset="utf-8">
+<link href='https://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900,900italic&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="{{base_url}}css/highlight.darkula.css" media="screen" title="no title" charset="utf-8">
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+            <nav>
+                <a href="{{ home_page }}" class="logo-icon"><span class="flaticon-cat2"></span></a>
+                <ul class="navbar">
+                    <li class="active"><a href="{{ base_url }}{{ blog_archive }}">BLOG</a></li>
+                    <li><a target="_blank" href="{{ twitter_link }}">TWITTER</a></li>
+                    <li><a target="_blank" href="{{ github_link }}">GITHUB</a></li>
+                    <li><a target="_blank" href="{{ linkedin_link }}">LINKEDIN</a></li>
+                </ul>
+            </nav>
+        </header>
+        <article>
+            {{#each collections.posts}}
+            <a href="{{this.alias}}/" class="entry-link">
+                <div class="entry">
+                    {{ this.title }}
+                </div>
+            </a>
+            {{/each}}
+        </article>
+        <div class="push"></div>
+    </div>
+    <footer>
+    </footer>
+</body>
+</html>
