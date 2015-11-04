@@ -1,0 +1,246 @@
+/*
+@back-color: #000000;
+@nav-color: #ffffff;
+*/
+
+@back-color: #ffffff;
+@nav-color: #444444;
+
+@text-color: #444444;
+@back-text-color: #ffffff;
+
+@nav-font: 'Roboto', sans-serif;
+@footer-size: 150px;
+@header-size: 90px;
+@header-size-small-rez: 260px;
+@header-border: 5px;
+@nav-min-width: 400px;
+
+@min-size: 550px;
+
+html, body {
+    padding: 0;
+    margin: 0 auto;
+    height: 100%;
+}
+html, body, header {
+    background-color: @back-color;
+}
+body {
+    .background-gif;
+    background-size: 100% auto;
+    @media (max-width: 800px) {
+        background-size: 800px auto;
+    }
+    @media (max-width: @min-size) {
+        background-size: @min-size auto;
+        min-width: @nav-min-width;
+    }
+}
+header {
+    text-align: left;
+    .background-pattern;
+    height: @header-size;
+    border-bottom: @header-border solid @nav-color;
+    @media (max-width: @min-size) {
+        min-width: @nav-min-width;
+    }
+}
+.background-gif {
+
+    background: url(http://192.168.0.106:9009/mad.max.5.gif) no-repeat 0px @header-size + @header-border, center;
+
+    @media (max-width: @min-size) {
+        background-position: 0px @header-size-small-rez + @header-border;
+    }
+}
+.background-pattern {
+    /*
+    background-image: url(http://192.168.0.106:9009/white-carbon.png);
+    */
+}
+nav {
+    color: @nav-color;
+    padding-top: 10px;
+    @media (max-width: @min-size) {
+        min-width: @nav-min-width;
+    }
+}
+.logo-icon {
+    padding: 10px 25px;
+    text-decoration: none;
+}
+.logo-icon span:before {
+    color: @nav-color;
+    font-size: 60px;
+}
+nav ul {
+    list-style: none;
+    margin-top: 25px;
+    padding: 0px;
+    @media (max-width: @min-size) {
+        margin-top: 5px;
+    }
+}
+nav li {
+    position: relative;
+    float: left;
+    display: block;
+}
+nav li a, .logo {
+    font-family: @nav-font;
+    font-size: 16px;
+    font-weight: 900;
+    color: @nav-color;
+    text-decoration: none;
+    padding: 10px;
+    margin: 5px;
+}
+nav li a {
+    background-color: @back-color;
+}
+nav li.active {
+    color: @back-color;
+    @media (max-width: @min-size) {
+        background-color: @nav-color;
+        min-width: @nav-min-width;
+    }
+}
+nav li.active a {
+    color: @back-color;
+    background-color: @nav-color;
+}
+.logo {
+    float: left;
+}
+.navbar {
+    float: right;
+    @media (max-width: @min-size) {
+        clear: both;
+        float: none;
+    }
+}
+nav li {
+    @media (max-width: @min-size) {
+        display: block;
+        width: 100%;
+        float: none;
+        line-height: 44px;
+    }
+}
+header {
+    @media (max-width: @min-size) {
+        height: @header-size-small-rez;
+    }
+}
+div.wrapper {
+    min-height: 100%;
+    margin: 0 auto -@footer-size - 20px;
+    @media (max-width: @min-size) {
+        min-width: @nav-min-width;
+    }
+}
+div.wrapper .whoami {
+    margin-top: 400px;
+    width: 600px;
+    background: @nav-color;
+    padding: 50px;
+    font-family: @nav-font;
+    font-size: 16px;
+}
+article {
+    margin: auto;
+    text-align: center;
+}
+article .entry {
+    margin: 20px auto;
+}
+article .entry-header, article .entry-text {
+    margin: 80px auto;
+}
+article .entry, article .entry-text {
+    text-align: left;
+    color: @text-color;
+    background-color: @back-text-color;
+    width: 80%;
+    @media (max-width: 800px) {
+        width: 80%;
+    }
+    @media (max-width: @min-size) {
+        margin: 40px auto;
+        width: 300px;
+    }
+}
+article .entry-wrapper {
+    width: 100%;
+    background-color: @back-text-color;
+    padding-top: 20px;
+}
+article .entry-text {
+    @media (max-width: 800px) {
+        width: 90%;
+    }
+}
+article .entry {
+    border: 5px solid @nav-color;
+    font-family: @nav-font;
+    font-size: 25px;
+    font-weight: 900;
+    padding: 30px;
+    color: @text-color;
+    text-decoration: none;
+}
+article .entry-text {
+    font-family: @nav-font;
+    font-size: 22px;
+    line-height: 1.6em;
+    font-weight: 300;
+}
+article a.entry-link {
+    color: @text-color;
+    text-decoration: none;
+}
+p code, ol code {
+    font-family: 'Anonymous Pro', monospace;
+    display: inline-block;
+    white-space: no-wrap;
+    background: #fff;
+    font-size: 18px;
+    line-height: 1.5em;
+    color: #555;
+    border: 1px solid #ddd;
+    -webkit-border-radius: 0.4em;
+    -moz-border-radius: 0.4em;
+    -ms-border-radius: 0.4em;
+    -o-border-radius: 0.4em;
+    border-radius: 0.4em;
+    padding: 0 .3em 0 .4em;
+    margin: -1px 0.1em;
+}
+pre code {
+    font-size: 16px !important;
+}
+.footnote-backref, .footnote-ref a {
+    text-decoration: none;
+    border: 0px;
+}
+.footnotes {
+    padding-right: 20px;
+}
+.footnotes ol, .footnotes p {
+    font-family: @nav-font;
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 1.5em;
+}
+div.entry-text a {
+    font-family: @nav-font;
+    color: #555;
+    text-decoration: none;
+}
+footer, .push {
+    height: @footer-size;
+}
+footer {
+    padding: 10px;
+}

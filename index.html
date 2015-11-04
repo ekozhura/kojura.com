@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>kojuro.com</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" href="/templates/fonts/flaticon.css" media="screen" title="no title" charset="utf-8">
+<link rel="stylesheet" href="/build/css/styles.css" media="screen" title="no title" charset="utf-8">
+<link href='https://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900,900italic&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/templates/css/highlight.darkula.css" media="screen" title="no title" charset="utf-8">
+</head>
+<body>
+    <div class="wrapper">
+
+        <header>
+            <nav>
+                <a href="#" class="logo-icon"><span class="flaticon-cat2"></span></a>
+                <ul class="navbar">
+                    <li class="active"><a href="#">BLOG</a></li>
+                    <li><a href="#">TWITTER</a></li>
+                    <li><a href="#">GITHUB</a></li>
+                    <li><a href="#">LINKEDIN</a></li>
+                </ul>
+            </nav>
+        </header>
+
+
+        <!--article>
+            <a href="#" class="entry-link">
+                <div class="entry">
+                    Композиция в SuperCollider. Часть 1. Потоки
+                </div>
+            </a>
+            <a href="#" class="entry-link">
+                <div class="entry">
+                    Композиция в SuperCollider. Часть 2. Введение в паттерны
+                </div>
+            </a>
+            <a href="#" class="entry-link">
+                <div class="entry">
+                    Композиция в SuperCollider. Часть 3. Время и планировщики задач
+                </div>
+            </a>
+        </article-->
+
+        <article>
+            <div class="entry entry-header">
+                Композиция в SuperCollider. Часть 1. Потоки
+            </div>
+            <div class="entry-wrapper">
+            <div class="entry-text">
+
+                <p>В предыдущих статьях я рассмотрел потоки данных и способы их генерации с помощью <code>Routine</code>, <code>FuncStream</code>, и паттернов. Особенно интересен класс <code>Routine</code>, который с помощью <code>yield</code> может приостанавливать свое выполнение, возвращать значение и при повторном вызове продолжать выполнение с места остановки.</p>
+                <p>У <code>Routine</code> есть еще одна интересная особенность - мы можем явно указать задержку по времени, после которой процедура восстановит выполнение. Для этого, вместо <code>next</code>, мы посылаем объекту <code>Routine</code> сообщение <code>play</code>. Время задержки будет определяться числовым значением, которое вернет <code>yield</code>. В этом примере итерация цикла выполняется через каждые полсекунды:</p>
+<pre><code class="hljs language-js">(
+c = Routine {
+    <span class="hljs-number">100.</span><span class="hljs-keyword">do</span> {
+        |i|
+        (<span class="hljs-string">"Current value : "</span> + i).postln;
+        <span class="hljs-number">0.5</span>.yield;
+    };
+};
+)
+
+c.play; <span class="hljs-comment">// старт</span>
+
+c.stop; <span class="hljs-comment">// в любой момент можно остановить проигрывание.</span>
+</code></pre>
+                <p>В данном случае <code>Routine</code> выполняет совершенно другую задачу, не связанную с генерацией значений. Возможно, чтобы подчеркнуть, что значение, которое возвращает <code>yield</code> - это именно время задержки, для классов <code>Float</code> и <code>Integer</code> определен специальный метод <code>wait</code>, который по сути является псевдонимом <code>yield</code> <sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>. Тот же пример, но с методом <code>wait</code>, нагляднее демонстрирует поведение функции в <code>Routine</code>. Теперь код выглядит так, как будто на каждой итерации мы не значение возвращаем, а делаем паузу на полсекунды.</p>
+<pre><code class="hljs language-js">(
+c = Routine {
+    <span class="hljs-number">100.</span><span class="hljs-keyword">do</span> {
+        |i|
+        (<span class="hljs-string">"Current value : "</span> + i).postln;
+        <span class="hljs-number">0.5</span>.wait;
+    };
+};
+)
+</code></pre>
+                <p>Таким образом, с помощью <code>Routine</code> можно написать простой планировщик задач <sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>. Определим функцию, которая принимает в качестве аргументов время задержки (параметр <code>delta</code>) и функцию, которую необходимо выполнять всякий раз по прошествию заданного времени <code>delta</code>:</p>
+                <hr class="footnotes-sep">
+                <section class="footnotes">
+                <ol class="footnotes-list">
+                <li id="fn1"  class="footnote-item"><p>В статье о потоках мы видели этот подход в действии. Объекты всех классов, начиная с абстрактного Object и включая классы Number, String, семейство паттерн-классов и т.д., реализуют методы <code>next</code>, <code>embedInStream</code>, <code>asStream</code>, но реализация отличается в зависимости от класса. Таким образом, каждый объект может отвечать на сообщение <code>embedInStream</code>. <a href="#fnref1" class="footnote-backref">↩</a></p>
+                </li>
+                <li id="fn2"  class="footnote-item"><p>Одно замечание по <code>tryPerform</code>. Метод <code>tryPerform</code> не увидит методы, добавленные во время выполнения программы (например, добавленные с помощью <code>addUniqueMethod</code>). Возможно, так происходит потому, что он проверяет среди методов, определенных в классе на этапе компиляции. <a href="#fnref2" class="footnote-backref">↩</a></p>
+                </li>
+                </ol>
+                </section>
+            </div>
+            </div>
+        </article>
+            <!--div class="whoami">
+                Hey, my name is Evgeny Kozhura, and I'm from Kyiv, Ukraine. I'm an experienced software developer, with 7+ years of experience in web development. During my entire career I worked with a variety of technologies and frameworks. Since then, I became a professional in PHP and JavaScript. I have strong understanding of OOP/OOD concepts, interested in coupling them with functional/declarative paradigms.
+            </div-->
+        <div class="push"></div>
+    </div>
+    <!--footer>
+        Font generated by <a href="http://www.flaticon.com">flaticon.com</a>
+         under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY</a>. The authors are: <a href="http://www.freepik.com">Freepik</a>.
+    </footer-->
+</body>
+</html>

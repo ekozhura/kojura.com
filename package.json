@@ -1,0 +1,13 @@
+{
+  "name": "tech.blog",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Evgeny Kozhura",
+  "dependencies": {
+    "handlebars": "^4.0.4",
+    "metalsmith": "^2.0.1",
+    "metalsmith-layouts": "^1.4.2",
+    "metalsmith-less": "^2.0.0",
+    "metalsmith-markdownit": "^0.1.3"
+  }
+}
