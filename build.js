@@ -16,7 +16,7 @@ md.parser.use(require('markdown-it-highlightjs'));
 
 var metalsmith = Metalsmith(__dirname)
     .metadata({
-        base_url: "http://kojuro.com/",
+        base_url: "http://localhost:9011/build/",
         home_page: "http://kojuro.com/",
         blog_archive: "blog/",
         twitter_link: "https://twitter.com/brutallo",
@@ -25,8 +25,13 @@ var metalsmith = Metalsmith(__dirname)
     })
     .use(md)
     .use(collections({
+        pinned_posts: {
+            pattern: './src/blog/posts/*.md',
+            sortBy: 'date',
+            reverse: true
+        },
         posts: {
-            pattern: './src/blog/**.md',
+            pattern: './src/blog/posts/*.md',
             sortBy: 'date',
             reverse: true
         }

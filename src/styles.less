@@ -3,6 +3,8 @@
 
 @back-color: #ffffff;
 @nav-color: #444444;
+@pinned-back-color: #848484;
+@blockquote-color: #C4C4C4;
 
 @text-color: #444444;
 @back-text-color: #ffffff;
@@ -51,7 +53,10 @@ header {
     }
 }
 .background-gif() {
-    background: no-repeat 0px @header-size + @header-border, center;
+    background: no-repeat 0px @header-border, center;
+    @media (max-width: 1400px) {
+        background-position: 0px @header-size + @header-border;
+    }
     @media (max-width: @min-size) {
         background-position: 0px @header-size-small-rez + @header-border;
     }
@@ -177,20 +182,15 @@ div.wrapper {
         min-width: @nav-min-width;
     }
 }
-div.wrapper .whoami {
-    margin-top: 400px;
-    width: 600px;
-    background: @nav-color;
-    padding: 50px;
-    font-family: @nav-font;
-    font-size: 16px;
-}
 article {
     margin: auto;
     text-align: center;
 }
 article .entry {
     margin: 20px auto;
+}
+article .entry.pinned {
+    background: @pinned-back-color;
 }
 article .entry-header, article .entry-text {
     margin: 80px auto;
@@ -258,6 +258,20 @@ p code, ol code {
     padding: 0 .3em 0 .4em;
     margin: -1px 0.1em;
 }
+p a {
+    color: @back-color;
+    background-color: @nav-color;
+    padding: 0 5px;
+}
+sup a {
+    color: @inverted-back-color;
+    background-color: @inverted-nav-color;
+}
+blockquote {
+    margin: 0;
+    padding: 1px 20px;
+    border-left: 5px solid @blockquote-color;
+}
 pre code {
     font-size: 16px !important;
 }
@@ -276,7 +290,6 @@ pre code {
 }
 div.entry-text a {
     font-family: @nav-font;
-    color: #555;
     text-decoration: none;
 }
 footer, .push {

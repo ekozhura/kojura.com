@@ -8,11 +8,13 @@
             <div class="entry entry-header">
                 {{ title }}
             </div>
+            {{#if contents}}
             <div class="entry-wrapper">
                 <div class="entry-text">
                     {{{ contents }}}
                 </div>
             </div>
+            {{/if}}
         </article>
         <div class="push"></div>
     </div>

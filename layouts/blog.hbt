@@ -5,6 +5,13 @@
             {{> navbar type=true}}
         </header>
         <article>
+            {{#each collections.pinned_posts}}
+            <a href="{{this.alias}}/" class="entry-link">
+                <div class="entry pinned">
+                    <span class="icon-pinboard"></span>&nbsp;{{ this.title }}
+                </div>
+            </a>
+            {{/each}}
             {{#each collections.posts}}
             <a href="{{this.alias}}/" class="entry-link">
                 <div class="entry">
