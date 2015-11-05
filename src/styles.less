@@ -1,7 +1,6 @@
 @inverted-back-color: #000000;
 @inverted-nav-color: #ffffff;
 
-
 @back-color: #ffffff;
 @nav-color: #444444;
 
@@ -22,7 +21,7 @@ html, body {
     margin: 0 auto;
     height: 100%;
 }
-html, body, header {
+body, header {
     background-color: @back-color;
 }
 body {
@@ -46,12 +45,13 @@ header {
 }
 .inverted-background-gif() {
     background: url(gifs/7.samurai.003.gif) no-repeat 0px @header-size + @header-border, center;
+    background-color: @inverted-back-color;
     @media (max-width: @min-size) {
         background-position: 0px @header-size-small-rez + @header-border;
     }
 }
 .background-gif() {
-    background: none no-repeat 0px @header-size + @header-border, center;
+    background: no-repeat 0px @header-size + @header-border, center;
     @media (max-width: @min-size) {
         background-position: 0px @header-size-small-rez + @header-border;
     }
@@ -83,6 +83,7 @@ body.inverted {
     }
     nav li a {
         background-color: @inverted-back-color;
+        color: @inverted-nav-color;
     }
     nav li.active {
         color: @inverted-back-color;
@@ -91,7 +92,6 @@ body.inverted {
         }
     }
     nav li.active a {
-        color: @inverted-back-color;
         background-color: @inverted-nav-color;
     }
 }
