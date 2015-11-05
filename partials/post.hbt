@@ -1,0 +1,10 @@
+<article>
+    <div class="entry entry-header">
+        {{ title }}
+    </div>
+    <div class="entry-wrapper">
+        <div class="entry-text">
+            {{{ contents }}}
+        </div>
+    </div>
+</article>

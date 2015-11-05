@@ -1,0 +1,9 @@
+<nav>
+    <a href="{{ home_page }}" class="logo-icon"><span class="flaticon-cat2"></span></a>
+    <ul class="navbar">
+        <li {{#if type }} class="active" {{/if}}><a href="{{base_url}}{{ blog_archive }}">BLOG</a></li>
+        <li><a target="_blank" href="{{ twitter_link }}">TWITTER</a></li>
+        <li><a target="_blank" href="{{ github_link }}">GITHUB</a></li>
+        <li><a target="_blank" href="{{ linkedin_link }}">LINKEDIN</a></li>
+    </ul>
+</nav>

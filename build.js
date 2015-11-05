@@ -34,7 +34,8 @@ var metalsmith = Metalsmith(__dirname)
     .use(permalinks("blog/:alias"))
     .use(layouts({
         engine: 'handlebars',
-        directory: './layouts'
+        directory: './layouts',
+        partials: './partials'
     }))
     .use(less())
     .destination('./build')
